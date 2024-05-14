@@ -1,0 +1,40 @@
+{
+  "name": "backend_v1",
+  "version": "1.0.0",
+  "description": "Backend Application",
+  "main": "index.js",
+  "repository": "https://github.com/rakibulhasan933/backend-api-v1",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts"
+  },
+  "keywords": [
+    "node.js"
+  ],
+  "author": "rakibul hasan (https://www.rakibulhossain.com)",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.7",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "prisma": "^5.13.0",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.13.0",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "http-status": "^1.7.4",
+    "module-alias": "^2.2.3",
+    "tsc-watch": "^6.2.0"
+  },
+  "_moduleAliases": {
+    "@/app": "dist",
+    "@/config": "dist/config",
+    "@/lib": "dist/lib",
+    "@/middlewares": "dist/middlewares"
+  }
+}
