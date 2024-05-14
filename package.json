@@ -10,7 +10,7 @@
   "keywords": [
     "node.js"
   ],
-  "author": "rakibul hasan (https://www.rakibulhossain.com)",
+  "author": "rakibul hasan <https://www.rakibulhossain.com>",
   "license": "ISC",
   "devDependencies": {
     "@types/cookie-parser": "^1.4.7",
