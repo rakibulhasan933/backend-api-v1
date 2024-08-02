@@ -1,1 +1,1 @@
-## Backend Node application.   
+## Backend Node.js application.   
