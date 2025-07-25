@@ -28,39 +28,40 @@ A production-ready Node.js application built with TypeScript, Express, and Drizz
 ### Installation
 
 1. Clone the repository:
-\`\`\`bash
+```bash
 git clone <repository-url>
 cd nodejs-production-app
-\`\`\`
+```
 
 2. Install dependencies:
-\`\`\`bash
+```bash
 npm install
-\`\`\`
+```
 
 3. Set up environment variables:
-\`\`\`bash
+```bash
 cp .env.example .env
 # Edit .env with your configuration
-\`\`\`
+```
 
 4. Set up the database:
-\`\`\`bash
+```bash
 # Generate and run migrations
 npm run db:generate
 npm run db:migrate
-
+```
+```
 # Or push schema directly (development)
 npm run db:push
 
 # Seed the database
 npm run db:seed
-\`\`\`
+```
 
 5. Start the development server:
-\`\`\`bash
+```bash
 npm run dev
-\`\`\`
+```
 
 ## Scripts
 
@@ -92,15 +93,15 @@ npm run dev
 ## Docker
 
 ### Build and run with Docker:
-\`\`\`bash
+```bash
 npm run docker:build
 npm run docker:run
-\`\`\`
+````
 
 ### Using Docker Compose:
-\`\`\`bash
+```bash
 docker-compose up -d
-\`\`\`
+```
 
 ## Database Schema
 
@@ -123,33 +124,33 @@ The application uses Drizzle ORM with PostgreSQL. Schema is defined in `src/db/s
 ## Testing
 
 Run the test suite:
-\`\`\`bash
+```bash
 npm test
-\`\`\`
+```
 
 Run tests with coverage:
-\`\`\`bash
+```bash
 npm run test:coverage
-\`\`\`
+```
 
 ## Production Deployment
 
 1. Build the application:
-\`\`\`bash
+```bash
 npm run build
-\`\`\`
+```
 
 2. Set production environment variables
 
 3. Run database migrations:
-\`\`\`bash
+```bash
 npm run db:migrate
-\`\`\`
+```
 
 4. Start the server:
-\`\`\`bash
+```bash
 npm start
-\`\`\`
+```
 
 ## Security Features
 
