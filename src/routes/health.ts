@@ -9,8 +9,8 @@ router.get("/", async (_, res) => {
     await db.execute("SELECT 1")
     // If the query succeeds, the database is healthy
 
-    res.json({
-      status: "healthy",
+    res.status(200).json({
+      status: "ok",
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       memory: process.memoryUsage(),
