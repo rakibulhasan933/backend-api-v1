@@ -1,0 +1,20 @@
+# Development Dockerfile
+FROM oven/bun:1-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json bun.lockb* ./
+
+# Install all dependencies (including dev dependencies)
+RUN bun install --frozen-lockfile
+
+# Copy source code
+COPY . .
+
+# Expose port
+EXPOSE 3001
+
+# Start development server with hot reload
+CMD ["bun", "run", "dev"] 

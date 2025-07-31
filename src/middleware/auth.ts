@@ -1,46 +1,74 @@
-import type { Request, Response, NextFunction } from "express"
-import { verifyToken } from "@/utils/auth"
-import { db } from "@/db/connection"
-import { users } from "@/db/schema"
-import { eq } from "drizzle-orm"
+import { Response, NextFunction } from 'express';
+import { verifyToken, extractTokenFromHeader } from '../utils/auth';
+import { db } from '../database/connection';
+import { users } from '../database/schema';
+import { eq } from 'drizzle-orm';
+import { AuthenticatedRequest } from '../types';
 
-export interface AuthRequest extends Request {
-  user?: {
-    id: string
-    email: string
-    username: string
-  }
-}
-
-export const authenticate = async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authenticateToken = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
-    const authHeader = req.headers.authorization
+    const authHeader = req.headers.authorization;
+    const token = extractTokenFromHeader(authHeader);
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ error: "Access token required" })
+    if (!token) {
+      res.status(401).json({
+        success: false,
+        message: 'Access token is required',
+      });
+      return;
     }
 
-    const token = authHeader.substring(7)
-    const decoded = verifyToken(token) as { userId: string }
-
-    const user = await db
-      .select({
-        id: users.id,
-        email: users.email,
-        username: users.username,
-      })
+    const payload = verifyToken(token);
+    
+    // Get user from database
+    const [user] = await db
+      .select()
       .from(users)
-      .where(eq(users.id, decoded.userId))
-      .limit(1)
+      .where(eq(users.id, payload.userId));
 
-    if (!user[0]) {
-      return res.status(401).json({ error: "Invalid token" })
+    if (!user || !user.isActive) {
+      res.status(401).json({
+        success: false,
+        message: 'User not found or inactive',
+      });
+      return;
     }
 
-    req.user = user[0]
-    next()
-    return
+    req.user = user;
+    next();
   } catch (error) {
-    return res.status(401).json({ error: "Invalid token" })
+    res.status(401).json({
+      success: false,
+      message: 'Invalid or expired token',
+    });
   }
-}
+};
+
+export const requireRole = (roles: string[]) => {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+    if (!req.user) {
+      res.status(401).json({
+        success: false,
+        message: 'Authentication required',
+      });
+      return;
+    }
+
+    if (!roles.includes(req.user.role)) {
+      res.status(403).json({
+        success: false,
+        message: 'Insufficient permissions',
+      });
+      return;
+    }
+
+    next();
+  };
+};
+
+export const requireAdmin = requireRole(['admin']);
+export const requireModerator = requireRole(['admin', 'moderator']); 

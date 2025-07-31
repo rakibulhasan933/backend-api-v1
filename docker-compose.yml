@@ -1,38 +1,104 @@
 version: '3.8'
 
 services:
-  app:
-    build: .
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - DATABASE_URL=postgresql://postgres:password@db:5432/myapp
-      - JWT_SECRET=jdjfhdjhfdhkdfdjhfkdjhkdhfjdhkdkd
-    depends_on:
-      - db
-    volumes:
-      - ./logs:/app/logs
-    restart: unless-stopped
-
-  db:
+  # PostgreSQL Database
+  postgres:
     image: postgres:15-alpine
+    container_name: production_app_db
     environment:
-      - POSTGRES_DB=myapp
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
+      POSTGRES_DB: production_app
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    ports:
-      - "5432:5432"
-    restart: unless-stopped
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d production_app"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  redis:
-    image: redis:7-alpine
+  # Node.js Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: production_app
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOST: 0.0.0.0
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_NAME: production_app
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/production_app
+      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
+      JWT_EXPIRES_IN: 7d
+      RATE_LIMIT_WINDOW_MS: 900000
+      RATE_LIMIT_MAX_REQUESTS: 100
+      CORS_ORIGIN: http://localhost:3000
+      LOG_LEVEL: info
     ports:
-      - "6379:6379"
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app_network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Development service (optional)
+  app-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: production_app_dev
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      HOST: 0.0.0.0
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_NAME: production_app
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/production_app
+      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
+      JWT_EXPIRES_IN: 7d
+      RATE_LIMIT_WINDOW_MS: 900000
+      RATE_LIMIT_MAX_REQUESTS: 100
+      CORS_ORIGIN: http://localhost:3001
+      LOG_LEVEL: debug
+    ports:
+      - "3001:3001"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app_network
+    command: bun run dev
+    profiles:
+      - dev
 
 volumes:
   postgres_data:
+
+networks:
+  app_network:
+    driver: bridge 
